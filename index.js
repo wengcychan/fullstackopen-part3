@@ -46,30 +46,18 @@ app.get('/api/persons', (req, res) => {
 	Person.find({}).then(persons =>
 		res.json(persons)
 	)
-	// res.json(persons)
 })
 
 app.get('/api/persons/:id', (req, res) => {
-	const id = Number(req.params.id)
-	const person = persons.find(person => person.id === id)
-	
-	if (person)
+	Person.findById(req.params.id).then(person => {
 		res.json(person)
-	else
-		res.status(404).end()
+	})
 })
 
 app.get('/info', (req, res) => {
 	res.send(`<p>Phonebook has info for ${persons.length} people</p>
 	<p>${new Date()}</p>`)
 })
-
-const generateId = () => {
-	const id = persons.length > 0 
-		? Math.floor(Math.random() * 10000) 
-		: 0
-	return id + 1
-}
 
 app.post('/api/persons', (req, res) => {
 	const body = req.body
@@ -80,18 +68,17 @@ app.post('/api/persons', (req, res) => {
 		return res.status(400).json({ error: 'name missing' })
 	else if (!body.number)
 		return res.status(400).json({ error: 'number missing' })
-	else if (persons.find(person => person.name === body.name))
-		return res.status(400).json({ error: 'name must be unique' })
-	
-	const person = {
-		"id": generateId(),
-		"name": body.name,
-		"number": body.number
-	}
+	// else if (persons.find(person => person.name === body.name))
+	// 	return res.status(400).json({ error: 'name must be unique' })
 
-	persons = persons.concat(person)
+	const person = new Person({
+		name: body.name,
+		number: body.number
+	})
 
-	res.json(person)
+	person.save().then(savedPerson => {
+		res.json(savedPerson)
+	})
 })
 
 app.delete('/api/persons/:id', (req, res) => {
