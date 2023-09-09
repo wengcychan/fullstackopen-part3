@@ -32,10 +32,10 @@ const App = () => {
             setMessage(`Added ${person.name}`)
             setTimeout(() => {setMessage(null)}, 5000)
           })
-          .catch ( error => {
-            setMessage(`Information of ${person.name} has already been removed from server`)
-            setTimeout(() => {setMessage(null)}, 5000)
-            setPersons(persons.filter(n => n.id !== person.id))
+          .catch( () => {
+              setMessage(`Information of ${person.name} has already been removed from server`)
+              setTimeout(() => {setMessage(null)}, 5000)
+              setPersons(persons.filter(n => n.id !== person.id))
           })
       }
   }
