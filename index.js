@@ -13,34 +13,24 @@ morgan.token('req-body', (req, res) => {
 	return ''
 });
 
+const unknownEndpoint = (req, res) => {
+	res.status(404).send({ error: 'unknown endpoint'})
+}
+
+const errorHandler = (error, req, res, next) => {
+	console.error(error.messgae)
+
+	if (error.name === 'CastError')
+		res.status(400).send({ error: 'malformatted id' })
+
+	next(error)
+}
+
 app.use(express.static('dist'))
 
 app.use(express.json())
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :req-body'))
-
-let persons = [
-	{ 
-		"id": 1,
-		"name": "Arto Hellas", 
-		"number": "040-123456"
-	},
-	{ 
-		"id": 2,
-		"name": "Ada Lovelace", 
-		"number": "39-44-5323523"
-	},
-	{ 
-		"id": 3,
-		"name": "Dan Abramov", 
-		"number": "12-43-234345"
-	},
-	{ 
-		"id": 4,
-		"name": "Mary Poppendieck", 
-		"number": "39-23-6423122"
-	}
-]
 
 app.get('/api/persons', (req, res) => {
 	Person.find({}).then(persons =>
@@ -48,10 +38,14 @@ app.get('/api/persons', (req, res) => {
 	)
 })
 
-app.get('/api/persons/:id', (req, res) => {
+app.get('/api/persons/:id', (req, res, next) => {
 	Person.findById(req.params.id).then(person => {
-		res.json(person)
+		if (person)
+			res.json(person)
+		else
+			res.status(404).end()
 	})
+	.catch(error => next(error))
 })
 
 app.get('/info', (req, res) => {
@@ -81,12 +75,15 @@ app.post('/api/persons', (req, res) => {
 	})
 })
 
-app.delete('/api/persons/:id', (req, res) => {
-	const id = Number(req.params.id)
-	persons = persons.filter(person => person.id !== id)
-
-	res.status(204).end()
+app.delete('/api/persons/:id', (req, res, next) => {
+	Person.findByIdAndRemove(req.params.id).then(result => {
+		res.status(204).end()
+	})
+	.catch(error => next(error))
 })
+
+app.use(unknownEndpoint)
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
