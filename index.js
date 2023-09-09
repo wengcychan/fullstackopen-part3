@@ -6,15 +6,15 @@ const Person = require('./models/person.js')
 
 const app = express()
 
-morgan.token('req-body', (req, res) => {
+morgan.token('req-body', (req) => {
 	if (req.method === 'POST') {
 		return JSON.stringify(req.body)
 	}
 	return ''
-});
+})
 
 const unknownEndpoint = (req, res) => {
-	res.status(404).send({ error: 'unknown endpoint'})
+	res.status(404).send({ error: 'unknown endpoint' })
 }
 
 const errorHandler = (error, req, res, next) => {
@@ -46,7 +46,7 @@ app.get('/api/persons/:id', (req, res, next) => {
 		else
 			res.status(404).end()
 	})
-	.catch(error => next(error))
+		.catch(error => next(error))
 })
 
 app.get('/info', (req, res, next) => {
@@ -54,7 +54,7 @@ app.get('/info', (req, res, next) => {
 		res.send(`<p>Phonebook has info for ${count} people</p>
 		<p>${new Date()}</p>`)
 	})
-	.catch(error => next(error))
+		.catch(error => next(error))
 })
 
 app.post('/api/persons', (req, res, next) => {
@@ -68,24 +68,24 @@ app.post('/api/persons', (req, res, next) => {
 	person.save().then(savedPerson => {
 		res.json(savedPerson)
 	})
-	.catch(error => next(error))
+		.catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
-	const {name, number} = req.body
+	const { name, number } = req.body
 
-	Person.findByIdAndUpdate(req.params.id, {name, number}, { new: true, runValidators: true, context: 'query' })
-	.then(updatedPerson => {
-		res.json(updatedPerson)
-	})
-	.catch(error => next(error))
+	Person.findByIdAndUpdate(req.params.id, { name, number }, { new: true, runValidators: true, context: 'query' })
+		.then(updatedPerson => {
+			res.json(updatedPerson)
+		})
+		.catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', (req, res, next) => {
-	Person.findByIdAndRemove(req.params.id).then(result => {
+	Person.findByIdAndRemove(req.params.id).then(() => {
 		res.status(204).end()
 	})
-	.catch(error => next(error))
+		.catch(error => next(error))
 })
 
 app.use(unknownEndpoint)
